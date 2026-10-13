@@ -1,0 +1,11 @@
+# Consultas conhecidas para avaliacao (formato: consulta TAB esperado).
+# Varios esperados podem ser separados por '|'. Linhas com '#' sao ignoradas.
+# Consultas sem esperado servem para comparar volume entre prefixo e stemming.
+promoção	documentos/ABR - Nota de débito.pdf
+neco teixeira	documentos/ABR - Nota de débito.pdf
+dorgival	documentos/ACA - Nota de débito.pdf
+raulino	documentos/ALS - Nota de débito.pdf
+conego joao lima	documentos/ARG - Nota de débito.pdf
+joao cabral	documentos/ATT - Nota de débito.pdf
+débitos
+promocionais

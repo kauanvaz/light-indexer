@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Light indexer local de documentos do acervo.">
+  <title>Light indexer</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/css/estilo.css">
+</head>
+<body>
+  <a class="pular" href="#resultados">Ir para os resultados</a>
+
+  <header class="topo">
+    <div class="container topo__linha">
+      <a class="marca" href="/" aria-label="Light indexer, ir para o início">
+        <svg class="marca__icone" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
+          <path d="M6 2h8l4 4v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="M14 2v4h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <circle cx="10.5" cy="12.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M12.8 14.8 15 17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <span class="marca__nome">Light indexer</span>
+      </a>
+      <span class="marca__acervo" id="acervo-info" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <main class="container" id="conteudo">
+    <form class="busca" id="form-busca" role="search" autocomplete="off" novalidate>
+      <label class="sr-only" for="campo">Buscar documentos no acervo</label>
+      <span class="busca__icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" focusable="false">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="m16.5 16.5 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <input
+        id="campo"
+        class="busca__campo"
+        type="search"
+        name="q"
+        placeholder="Digite uma palavra-chave…"
+        autofocus
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="search"
+        aria-describedby="busca-ajuda">
+      <button class="busca__botao" type="submit">Buscar</button>
+      <span id="busca-ajuda" class="sr-only">Pressione Enter para pesquisar. Os resultados aparecem abaixo.</span>
+    </form>
+
+    <p class="resumo" id="resumo" role="status" aria-live="polite"></p>
+
+    <section id="resultados" class="resultados-area" aria-label="Resultados da busca">
+      <div class="estado" id="estado" aria-live="polite"></div>
+      <ol class="resultados" id="lista"></ol>
+      <nav class="paginacao" id="paginacao" aria-label="Paginação dos resultados" hidden></nav>
+    </section>
+
+    <noscript>
+      <p class="aviso">O Light indexer precisa de JavaScript ativado no navegador para exibir os resultados.</p>
+    </noscript>
+  </main>
+
+  <footer class="rodape">
+    <div class="container rodape__linha">
+      <p class="encerrar">
+        <strong>Antes de remover o HD/SSD:</strong> encerre o Light indexer e aguarde o desligamento do serviço.
+      </p>
+      <p class="rodape__meta" id="rodape-meta"></p>
+    </div>
+  </footer>
+
+  <script src="/js/app.js" defer></script>
+</body>
+</html>

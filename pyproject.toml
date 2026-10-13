@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "light-indexer"
+version = "0.1.0"
+description = "Light indexer: busca portatil de documentos com SQLite FTS5"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+runtime = [
+    "flask>=3.0",
+    "waitress>=3.0",
+]
+build = [
+    "pypdf>=6.0",
+    "pymupdf>=1.24",
+    "pytesseract>=0.3.10",
+    "pillow>=10.0",
+    "nltk>=3.8",
+]
+packaging = [
+    "pyinstaller>=6.0",
+]
+
+# Dependencias de desenvolvimento (PEP 735). Instaladas por padrao no `uv sync`.
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.uv]
+# uv e o gerenciador de pacotes padrao do projeto.
+# Ambiente completo de desenvolvimento (app, indexacao, testes e empacotamento):
+#   uv sync --all-extras
+# Somente app + testes:
+#   uv sync --extra runtime
+default-groups = ["dev"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

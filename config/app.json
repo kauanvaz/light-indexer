@@ -1,0 +1,15 @@
+{
+  "porta_preferida": 8765,
+  "tamanho_pagina": 20,
+  "tamanho_pagina_max": 50,
+  "abrir_navegador": true,
+  "host": "127.0.0.1",
+  "log_level": "INFO",
+  "log_max_bytes": 1048576,
+  "log_backup_count": 5,
+  "max_termos": 10,
+  "max_query_len": 256,
+  "timeout_busca_ms": 5000,
+  "cache_size": -8000,
+  "mmap_size": 268435456
+}
