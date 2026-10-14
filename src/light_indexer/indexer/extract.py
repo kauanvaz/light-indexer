@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .cache import CacheExtracao, ResultadoExtracao, chave_cache, hash_arquivo
-from .inventory import ArquivoAcervo
+from .inventory import EXTENSOES_IMAGEM, ArquivoAcervo
 
 FONTE_NATIVO = "nativo"
 FONTE_OCR = "ocr"
@@ -53,9 +53,12 @@ class Extrator:
 
     def extrair(self, caminho: Path) -> ResultadoExtracao:
         caminho = Path(caminho)
+        sufixo = caminho.suffix.lower()
         try:
-            if caminho.suffix.lower() == ".pdf":
+            if sufixo == ".pdf":
                 return self._extrair_pdf(caminho)
+            if sufixo in EXTENSOES_IMAGEM:
+                return self._extrair_imagem(caminho)
             return self._extrair_texto(caminho)
         except ErroExtracao:
             raise
@@ -100,17 +103,37 @@ class Extrator:
             return ""
         try:
             import io
-
-            import pytesseract
             from PIL import Image
-
+        except ImportError as exc:
+            raise ErroExtracao("pillow nao instalado (uv sync --extra build)") from exc
+            
+        try:
             pix = page.get_pixmap(dpi=self.params.dpi)
             imagem = Image.open(io.BytesIO(pix.tobytes("png")))
-            return pytesseract.image_to_string(imagem, lang=self.params.ocr_lang)
         except Exception as exc:
             if self.strict:
                 raise ErroExtracao(f"falha de OCR: {exc}") from exc
             self._tesseract_indisponivel = True
+            self._aviso("OCR indisponivel (%s); pagina sem texto ficam vazias", exc)
+            return ""
+        return self._ocr_imagem(imagem)
+
+    def _ocr_imagem(self, imagem) -> str:
+        if self._tesseract_indisponivel:
+            return ""
+        try:
+            import pytesseract
+        except ImportError as exc:
+            raise ErroExtracao("pytesseract nao instalado (uv sync --extra build)") from exc
+            
+        try:
+            return pytesseract.image_to_string(imagem, lang=self.params.ocr_lang) or ""
+        except (Exception, pytesseract.TesseractNotFoundError) as exc:
+            if self.strict:
+                raise ErroExtracao(f"falha de OCR: {exc}") from exc
+            
+            if isinstance(exc, pytesseract.TesseractNotFoundError): self._tesseract_indisponivel = True
+            
             self._aviso("OCR indisponivel (%s); paginas sem texto ficam vazias", exc)
             return ""
 
@@ -126,6 +149,33 @@ class Extrator:
             paginas=[{"pagina": 1, "texto": texto, "fonte": fonte}],
             n_ocr=0,
             n_sem_texto=n_sem,
+        )
+
+    def _extrair_imagem(self, caminho: Path) -> ResultadoExtracao:
+        try:
+            from PIL import Image, ImageOps
+        except ImportError as exc:  # pragma: no cover
+            raise ErroExtracao("pillow nao instalado (uv sync --extra build)") from exc
+
+        try:
+            imagem = Image.open(caminho)
+            texto = self._ocr_imagem(imagem)
+        except ErroExtracao:
+            raise
+        except Exception as exc:
+            raise ErroExtracao(f"imagem invalida: {caminho}: {exc}") from exc
+
+        if texto.strip():
+            return ResultadoExtracao(
+                paginas=[{"pagina": 1, "texto": texto, "fonte": FONTE_OCR}],
+                n_ocr=1,
+                n_sem_texto=0,
+            )
+        
+        return ResultadoExtracao(
+            paginas=[{"pagina": 1, "texto": "", "fonte": FONTE_VAZIO}],
+            n_ocr=0,
+            n_sem_texto=1,
         )
 
 
