@@ -155,10 +155,8 @@ class Extrator:
             raise ErroExtracao("pillow nao instalado (uv sync --extra build)") from exc
 
         try:
-            with Image.open(caminho) as aberta:
-                aberta.load()
-                imagem = ImageOps.exif_transpose(aberta)
-                texto = self._ocr_imagem(imagem)
+            imagem = Image.open(caminho)
+            texto = self._ocr_imagem(imagem)
         except ErroExtracao:
             raise
         except Exception as exc:
