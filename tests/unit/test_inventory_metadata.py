@@ -22,6 +22,23 @@ def test_inventariar_deterministico(tmp_path):
     assert itens[2].relativo == "sub/c.pdf"
 
 
+def test_inventariar_inclui_imagens(tmp_path):
+    imagens = (
+        "foto.png", "foto.jpg", "foto.jpeg",
+        "scan.tif", "scan.tiff", "figura.bmp", "web.webp", "FOTO2.PNG",
+    )
+    for nome in imagens:
+        (tmp_path / nome).write_bytes(b"x")
+    (tmp_path / "ignorar.md").write_text("x", encoding="utf-8")
+    (tmp_path / "ignorar.docx").write_bytes(b"x")
+
+    itens = inventariar(tmp_path)
+
+    assert {i.identificador for i in itens} == {
+        f"documentos/{nome}" for nome in imagens
+    }
+
+
 def test_limpar_titulo():
     assert limpar_titulo("  Edital  2026  ") == "Edital 2026"
     assert limpar_titulo("tmp07sa1344.html") == ""

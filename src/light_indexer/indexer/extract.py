@@ -1,5 +1,8 @@
 """Extracao de texto nativo e OCR por pagina, com cache retomavel.
 
+Etapas 2-3 do pipeline (PRD 5.5, 5.8, 6.3). OCR roda apenas nas paginas sem
+texto nativo, detectadas pagina a pagina. A extracao e paralelizavel e
+retomavel por arquivo.
 """
 
 from __future__ import annotations

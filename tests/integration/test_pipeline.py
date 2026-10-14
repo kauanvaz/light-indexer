@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import sqlite3
 
+import pytest
+
 from light_indexer import schema
 from light_indexer.indexer.cache import CacheExtracao
 from light_indexer.indexer.extract import (
@@ -114,4 +116,54 @@ def test_validar_detecta_pendencia(tmp_path):
     rel = validar(db, acervo, cache=cache)
     assert not rel.ok
     assert rel.arquivos_sem_registro == 1
+    cache.fechar()
+
+
+def test_pipeline_com_imagem_ocr(tmp_path, pytesseract_falso):
+    """Pipeline .txt + .png (OCR simulado): carga, validacao, busca e cache."""
+    pil_image = pytest.importorskip(
+        "PIL.Image", reason="pillow indisponivel (uv sync --extra build)"
+    )
+    acervo = tmp_path / "acervo"
+    acervo.mkdir()
+    (acervo / "edital-licitacao.txt").write_text(
+        "Edital de licitação pública municipal 2026", encoding="utf-8"
+    )
+    pil_image.new("RGB", (60, 30), "white").save(acervo / "recibo-escaneado.png")
+    pytesseract_falso.resposta = "recibo de pagamento autônomo"
+
+    cache, entradas = _extrair(acervo, tmp_path)
+    db = tmp_path / "indice.db"
+    stats = construir(str(db), entradas, Normalizador(modo="prefixo"), {})
+    assert stats.documentos == 2
+    assert stats.paginas == 2
+    assert stats.paginas_ocr == 1
+    assert stats.paginas_sem_texto == 0
+
+    rel = validar(db, acervo, cache=cache)
+    assert rel.ok
+    assert rel.integrity_check == "ok"
+    assert rel.documentos_encontrados == 2
+    assert rel.paginas_indexadas == 2
+    assert rel.paginas_ocr == 1
+
+    con = sqlite3.connect(str(db))
+    match = Normalizador(modo="prefixo").montar_match("recibo")
+    linhas = con.execute(
+        "SELECT d.arquivo FROM busca JOIN paginas p ON p.id=busca.rowid "
+        "JOIN documentos d ON d.id=p.doc_id WHERE busca MATCH ?",
+        (match,),
+    ).fetchall()
+    con.close()
+    assert linhas == [("documentos/recibo-escaneado.png",)]
+
+    n_chamadas = len(pytesseract_falso.chamadas)
+    entradas2, _ = processar_arquivos(
+        inventariar(acervo), cache, ParametrosExtracao(), Extrator(ParametrosExtracao()),
+        resume=True, workers=1,
+    )
+    assert len(pytesseract_falso.chamadas) == n_chamadas
+    assert cache.contar() == 2
+    textos = {a.identificador: r.paginas[0]["texto"] for a, r in entradas2}
+    assert textos["documentos/recibo-escaneado.png"] == "recibo de pagamento autônomo"
     cache.fechar()
