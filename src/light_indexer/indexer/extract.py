@@ -6,6 +6,7 @@ retomavel por arquivo.
 """
 
 from __future__ import annotations
+from functools import reduce
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
@@ -54,8 +55,11 @@ class Extrator:
     def extrair(self, caminho: Path) -> ResultadoExtracao:
         caminho = Path(caminho)
         try:
-            if caminho.suffix.lower() == ".pdf":
+            suffix = caminho.suffix.lower()
+            if suffix == ".pdf":
                 return self._extrair_pdf(caminho)
+            if suffix == ".docx":
+                return self._extrair_docx(caminho)
             return self._extrair_texto(caminho)
         except ErroExtracao:
             raise
@@ -128,6 +132,32 @@ class Extrator:
             n_sem_texto=n_sem,
         )
 
+    def _extrair_docx(self, caminho: Path) -> ResultadoExtracao:
+        try:
+            from docx import Document
+        except ImportError as exc:  # pragma: no cover
+            raise ErroExtracao("python-docx nao instalado (uv sync --extra build)") from exc
+        
+        try:
+            documento = Document(str(caminho))
+
+            
+        except Exception as exc:
+            raise ErroExtracao(f"Falha ao extrair docx: {exc}") from exc
+
+        paragrafos = []
+        for par in documento.paragraphs:
+            paragrafos.append(par.text)
+
+        texto : str = reduce(lambda result, current: result + "\n" + current, paragrafos)
+
+        fonte, n_sem_texto = (FONTE_NATIVO, 0) if texto.strip() else (FONTE_VAZIO, 1)
+
+        return ResultadoExtracao(
+            paginas=[{"pagina": 1, "texto": texto, "fonte": fonte }],
+            n_ocr=0,
+            n_sem_texto=n_sem_texto
+        )
 
 def _processar_um(
     arquivo: ArquivoAcervo,

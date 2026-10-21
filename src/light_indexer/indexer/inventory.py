@@ -11,7 +11,7 @@ from pathlib import Path
 
 from .cache import hash_arquivo
 
-EXTENSOES_PADRAO = (".pdf", ".txt")
+EXTENSOES_PADRAO = (".pdf", ".txt", ".docx")
 PREFIXO_PADRAO = "documentos"
 
 
