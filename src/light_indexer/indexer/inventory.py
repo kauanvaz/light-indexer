@@ -11,7 +11,9 @@ from pathlib import Path
 
 from .cache import hash_arquivo
 
-EXTENSOES_PADRAO = (".pdf", ".txt")
+EXTENSOES_IMAGEM = (".png", ".jpg", ".tiff", ".bmp", ".webp")
+
+EXTENSOES_PADRAO = (".pdf", ".txt") + EXTENSOES_IMAGEM
 PREFIXO_PADRAO = "documentos"
 
 
